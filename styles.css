@@ -18,6 +18,7 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -32,8 +33,14 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
+}
+
+button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .app-shell {
@@ -92,6 +99,24 @@ h1 {
 .date-builder {
   display: grid;
   gap: 12px;
+}
+
+.schedule-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.schedule-controls select {
+  min-width: min(240px, 100%);
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid rgba(212, 165, 87, 0.28);
+  border-radius: 10px;
+  background: var(--bg-mid);
+  color: var(--text);
 }
 
 .field {
@@ -303,6 +328,8 @@ h2 {
 .schedule-wrap {
   overflow-x: auto;
   padding-bottom: 6px;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .schedule-table {
@@ -392,22 +419,125 @@ h2 {
 }
 
 @media (max-width: 568px) {
+  body {
+    padding-top: max(14px, env(safe-area-inset-top));
+    padding-right: max(10px, env(safe-area-inset-right));
+    padding-bottom: max(18px, env(safe-area-inset-bottom));
+    padding-left: max(10px, env(safe-area-inset-left));
+  }
+
+  h1 {
+    font-size: clamp(1.65rem, 8vw, 2.2rem);
+    line-height: 1.15;
+    letter-spacing: 0.035em;
+    overflow-wrap: anywhere;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+    line-height: 1.35;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  button,
+  .nav-button,
+  .secondary-btn {
+    min-height: 44px;
+  }
+
+  .panel {
+    padding: 16px 12px 12px;
+    border-radius: 16px;
+  }
+
+  .panel-head {
+    align-items: flex-start;
+  }
+
+  .calendar-grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+    padding: 8px;
+  }
+
+  .calendar-day {
+    min-width: 0;
+    min-height: 44px;
+    padding: 0;
+    border-radius: 8px;
+  }
+
+  .calendar-controls {
+    gap: 8px;
+  }
+
+  .calendar-nav {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+  }
+
+  .schedule-controls {
+    align-items: stretch;
+  }
+
+  .schedule-controls label {
+    width: 100%;
+  }
+
+  .schedule-controls select,
+  .schedule-controls button {
+    width: 100%;
+  }
+
+  .candidate-pill {
+    min-height: 44px;
+    padding: 9px 12px;
+  }
+
+  .candidate-remove {
+    width: 24px;
+    height: 24px;
+  }
+
+  .schedule-wrap {
+    margin-right: -12px;
+    margin-left: -12px;
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
   .date-col,
   .date-cell {
-    min-width: 18px;
-    width: 18px;
-    max-width: 18px;
-    font-size: 0.56rem;
-    padding: 6px 1px;
+    min-width: 52px;
+    width: 52px;
+    max-width: 52px;
+    font-size: 0.72rem;
+    padding: 8px 4px;
   }
 
   .time-col,
   .time-header {
-    min-width: 32px;
-    width: 32px;
-    max-width: 32px;
-    font-size: 0.56rem;
-    padding: 6px 1px;
+    min-width: 48px;
+    width: 48px;
+    max-width: 48px;
+    font-size: 0.72rem;
+    padding: 8px 4px;
+  }
+
+  .day-header {
+    min-width: 80px;
+  }
+
+  .panel .schedule-table tbody td {
+    width: 64px;
+    min-width: 64px;
+    height: 52px;
   }
 }
 
@@ -503,16 +633,14 @@ h2 {
 }
 
 @media (max-width: 720px) {
-  body {
-    padding: 20px 12px;
-  }
-
   .inline-field {
     flex-direction: column;
     max-width: none;
   }
 
+  .inline-field input,
   .inline-field button {
+    width: 100%;
     padding: 12px 14px;
   }
 
