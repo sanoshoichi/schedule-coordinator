@@ -39,7 +39,12 @@
             <select id="scheduleSelect"></select>
             <button id="newScheduleBtn" type="button" class="nav-button">新規予定</button>
             <button id="deleteScheduleBtn" type="button" class="secondary-btn">削除</button>
+            <button id="copyParticipantLinkBtn" type="button" class="secondary-btn">参加者リンクをコピー</button>
           </div>
+          <label class="field" for="participantLink" style="margin-top:8px;">
+            <span>選択中の予定の参加者リンク</span>
+            <input id="participantLink" type="text" readonly />
+          </label>
           <div id="calendarGrid" class="calendar-grid" aria-live="polite"></div>
           <div class="inline-field bulk-register">
             <button id="registerSelectedDatesBtn" type="button">選択した日を一括登録</button>
@@ -796,7 +801,8 @@
       const title = window.prompt('新しい予定のタイトルを入力してください');
       if (!title) return;
       const app = getAppState();
-      const id = `s_${Date.now()}`;
+      // 推測されにくいIDを共有リンクへ含め、別予定のURLを推測しにくくする。
+      const id = `s_${crypto.randomUUID().replaceAll('-', '')}`;
       const payload = deepClone(defaultState);
       const sched = { id, title, payload };
       app.schedules = app.schedules || [];
@@ -810,10 +816,28 @@
       renderCandidateDates();
       renderTable();
       renderCalendar();
-      const url = new URL(window.location.href);
-      url.searchParams.set('admin_token', ADMIN_TOKEN);
-      try { navigator.clipboard.writeText(url.toString()); } catch (e) {}
-      alert('新しい予定を作成しました。共有用の管理URL（クリップボードにコピー）を発行しました。');
+      updateParticipantLink();
+      copyParticipantLink();
+      alert('新しい予定を作成し、参加者専用リンクをコピーしました。');
+    }
+
+    function getParticipantLink() {
+      const id = getAppState().activeScheduleId;
+      if (!id) return '';
+      const url = new URL('index.html', window.location.href);
+      url.search = '';
+      url.searchParams.set('schedule', id);
+      return url.toString();
+    }
+
+    function updateParticipantLink() {
+      document.getElementById('participantLink').value = getParticipantLink();
+    }
+
+    async function copyParticipantLink() {
+      const link = getParticipantLink();
+      if (!link) return;
+      await navigator.clipboard.writeText(link);
     }
 
     function deleteCurrentSchedule() {
@@ -832,6 +856,7 @@
       // fire-and-forget server delete to avoid blocking UI on network issues
       if (id) deleteScheduleFromServer(id).catch(() => {});
       renderScheduleSelector();
+      updateParticipantLink();
       renderCandidateDates();
       renderTable();
       renderCalendar();
@@ -839,10 +864,15 @@
 
     document.getElementById('newScheduleBtn').addEventListener('click', createNewSchedule);
     document.getElementById('deleteScheduleBtn').addEventListener('click', deleteCurrentSchedule);
+    document.getElementById('copyParticipantLinkBtn').addEventListener('click', async () => {
+      await copyParticipantLink();
+      alert('参加者専用リンクをコピーしました。');
+    });
     document.getElementById('scheduleSelect').addEventListener('change', (e) => {
       const app = getAppState();
       app.activeScheduleId = e.target.value || null;
       saveAppState(app).then(() => {
+        updateParticipantLink();
         renderCandidateDates();
         renderTable();
         renderCalendar();
@@ -854,6 +884,7 @@
       const app = await listSchedulesFromServer();
       if (app) {
         renderScheduleSelector();
+        updateParticipantLink();
         renderCandidateDates();
         renderCalendar();
         renderTable();
@@ -861,6 +892,7 @@
         // 同期の完了後に描画し、古いローカル状態で一覧を上書きしない。
         await syncStateFromServer();
         renderScheduleSelector();
+        updateParticipantLink();
         renderCandidateDates();
         renderCalendar();
         renderTable();
