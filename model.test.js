@@ -1,0 +1,6 @@
+import test from'node:test';import assert from'node:assert/strict';import{validDate,normalizeName,parseDates,buildSlots,nextMark,validateAvailability}from'./model.js';
+test('日付を検証して重複を除き昇順にする',()=>{assert.equal(validDate('2026-09-01'),true);assert.equal(validDate('09/01/2026'),false);assert.deepEqual(parseDates('2026-09-03\ninvalid\n2026-09-01\n2026-09-03'),['2026-09-01','2026-09-03'])});
+test('名前を正規化し40文字に制限する',()=>{assert.equal(normalizeName('  山田   太郎  '),'山田 太郎');assert.equal(normalizeName('a'.repeat(50)).length,40)});
+test('候補日の時間枠を生成する',()=>{assert.deepEqual(buildSlots(['2026-09-01'],9,11),['2026-09-01T09:00','2026-09-01T10:00','2026-09-01T11:00']);assert.deepEqual(buildSlots(['2026-09-01'],20,9),[])});
+test('回答記号を順番に切り替える',()=>{assert.equal(nextMark(null),'circle');assert.equal(nextMark('circle'),'triangle');assert.equal(nextMark('triangle'),'cross');assert.equal(nextMark('cross'),null)});
+test('許可された枠と記号だけ受け入れる',()=>{const slots=['2026-09-01T09:00'];assert.equal(validateAvailability({'2026-09-01T09:00':'circle'},slots),true);assert.equal(validateAvailability({'2026-09-01T10:00':'circle'},slots),false);assert.equal(validateAvailability({'2026-09-01T09:00':'yes'},slots),false)});

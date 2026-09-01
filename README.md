@@ -1,20 +1,29 @@
-# sample_site
+# 日程調整サイト
 
-## 共有DB対応の予定調整アプリ
+GitHub Pagesの画面とSupabaseの共有DBを組み合わせた日程調整アプリです。参加者は共有URLから○・△・×を回答し、全員の回答を同じ表で確認できます。
 
-このアプリは SQLite を使って、候補日と参加者の登録情報を共同で保存できます。
+## 構造
 
-### 起動方法
+- `index.html` / `participant.js`: 参加者画面
+- `admin.html` / `admin.js`: 管理画面
+- `api.js`: Supabase RPC通信
+- `model.js`: 日付・時間枠・回答のドメインロジック
+- `supabase.sql`: テーブル、RLS、検証付きRPC
+- `model.test.js`: ドメインロジックの自動テスト
 
-```bash
-cd /Users/shoichi/Desktop/develop/sample_site
-python3 server.py
-```
+## 初回セットアップ
 
-ブラウザで以下を開いて使います。
+1. SupabaseのSQL Editorで `supabase.sql` を開く。
+2. 末尾の `CHANGE_ME` を十分長い管理パスワードへ変更して実行する。
+3. 別プロジェクトを使う場合は `config.js` のProject URLとpublishable anon keyを変更する。
+4. GitHub Pagesを `main` ブランチのルートから公開する。
 
-- 管理者: http://localhost:8000/admin.html
-- 参加者: http://localhost:8000/index.html
+参加者URLは `https://sanoshoichi.github.io/sample_site/?schedule=default`、管理画面は `https://sanoshoichi.github.io/sample_site/admin.html` です。
 
-同じサーバーにアクセスしている人同士で、データが共有されます。
-本番公開する場合は、サーバーを外部公開可能な環境に置けば、誰でも参照可能です。
+管理パスワードはブラウザへ保存せず、DBにはbcryptハッシュだけを保持します。テーブルへの直接アクセスはRLSで拒否し、入力検証付きRPCだけを公開します。
+
+## テスト
+
+`npm test`
+
+手動テスト: PC・スマートフォン表示、同名回答の更新、別端末での共有、不正な日程ID・名前・時間枠の拒否、誤った管理パスワードの拒否、名前欄のXSS耐性。
