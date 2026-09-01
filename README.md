@@ -1,13 +1,18 @@
-# sample_site
+# Schedule Coordinator
 
-## 共有DB対応の予定調整アプリ
+## 日程調整アプリ
 
-このアプリは SQLite を使って、候補日と参加者の登録情報を共同で保存できます。
+管理者が候補日時を作成し、予定ごとの専用リンクから参加者が出欠を回答できる日程調整サイトです。共有データは Supabase に保存されます。
+
+### 公開サイト
+
+- 参加者: https://sanoshoichi.github.io/schedule-coordinator/
+- 管理者: https://sanoshoichi.github.io/schedule-coordinator/admin.html
 
 ### 起動方法
 
 ```bash
-cd /Users/shoichi/Desktop/develop/sample_site
+cd schedule-coordinator
 python3 server.py
 ```
 
@@ -16,5 +21,4 @@ python3 server.py
 - 管理者: http://localhost:8000/admin.html
 - 参加者: http://localhost:8000/index.html
 
-同じサーバーにアクセスしている人同士で、データが共有されます。
-本番公開する場合は、サーバーを外部公開可能な環境に置けば、誰でも参照可能です。
+回答対象は予定ごとのリンクで指定され、参加者には他の予定を表示しません。
