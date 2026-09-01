@@ -1,7 +1,13 @@
 import{getSchedule,saveResponse}from'./api.js';import{buildSlots,nextMark,normalizeName,SYMBOLS}from'./model.js';
-const $=id=>document.getElementById(id),nameInput=$('participantName'),saveButton=$('saveButton'),notice=$('notice');let schedule,draft={};const slug=new URLSearchParams(location.search).get('schedule')||'default';
+const $=id=>document.getElementById(id),nameInput=$('participantName'),saveButton=$('saveButton'),notice=$('notice');
+
+// 回答は保存が成功するまで下書きとして保持し、通信失敗時にも選択を失わない。
+let schedule,draft={};
+// URLに日程IDがない場合は、初期日程を表示する。
+const slug=new URLSearchParams(location.search).get('schedule')||'default';
 function message(text,error=false){notice.hidden=!text;notice.textContent=text;notice.classList.toggle('error',error)}
 function formatDate(value){return new Intl.DateTimeFormat('ja-JP',{month:'numeric',day:'numeric',weekday:'short'}).format(new Date(`${value}T00:00:00`))}
+// 参加者名はHTMLとして解釈せず、テキストとして表へ挿入する。
 function escapeHtml(value){const span=document.createElement('span');span.textContent=value;return span.innerHTML}
 function render(){const slots=buildSlots(schedule.candidate_dates,schedule.start_hour,schedule.end_hour),responses=schedule.responses||[];$('scheduleTitle').textContent=schedule.title;$('scheduleHead').innerHTML=`<tr><th>日時</th><th>あなた</th>${responses.map(r=>`<th>${escapeHtml(r.name)}</th>`).join('')}</tr>`;$('scheduleBody').innerHTML=slots.map(slot=>{const[date,time]=slot.split('T');return`<tr><th>${formatDate(date)} ${time}</th><td><button class="slot ${draft[slot]||''}" data-slot="${slot}">${SYMBOLS[draft[slot]]||'－'}</button></td>${responses.map(r=>`<td>${SYMBOLS[r.availability?.[slot]]||'－'}</td>`).join('')}</tr>`}).join('');document.querySelectorAll('[data-slot]').forEach(button=>button.addEventListener('click',()=>{const mark=nextMark(draft[button.dataset.slot]||null);if(mark)draft[button.dataset.slot]=mark;else delete draft[button.dataset.slot];render()}))}
 nameInput.addEventListener('input',()=>saveButton.disabled=!normalizeName(nameInput.value));saveButton.addEventListener('click',async()=>{saveButton.disabled=true;message('保存中…');try{await saveResponse(slug,normalizeName(nameInput.value),draft);message('回答を保存しました。');schedule=await getSchedule(slug);if(Array.isArray(schedule))schedule=schedule[0];render()}catch(e){message(`保存できませんでした: ${e.message}`,true)}finally{saveButton.disabled=!normalizeName(nameInput.value)}});

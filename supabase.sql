@@ -1,4 +1,5 @@
 create extension if not exists pgcrypto;
+-- テーブルは直接公開せず、検証済みのRPCだけをブラウザから実行できるようにする。
 create table if not exists public.schedules(id uuid primary key default gen_random_uuid(),slug text unique not null check(slug~'^[a-z0-9-]{1,50}$'),title text not null check(char_length(title) between 1 and 100),candidate_dates date[] not null default '{}',start_hour int not null default 9 check(start_hour between 0 and 23),end_hour int not null default 20 check(end_hour between 0 and 23 and end_hour>=start_hour),admin_password_hash text not null,updated_at timestamptz not null default now());
 create table if not exists public.schedule_responses(id bigint generated always as identity primary key,schedule_id uuid not null references public.schedules on delete cascade,name text not null check(char_length(name) between 1 and 40),availability jsonb not null default '{}',updated_at timestamptz not null default now(),unique(schedule_id,name));
 alter table public.schedules enable row level security;alter table public.schedule_responses enable row level security;

@@ -1,5 +1,9 @@
-import{getSchedule,adminUpdate}from'./api.js';import{parseDates,normalizeHourRange}from'./model.js';const $=id=>document.getElementById(id),notice=$('notice');let selectingStart=true;
+import{getSchedule,adminUpdate}from'./api.js';import{parseDates,normalizeHourRange}from'./model.js';const $=id=>document.getElementById(id),notice=$('notice');
+
+// 1回目のクリックを開始候補、2回目を終了候補として範囲を確定する。
+let selectingStart=true;
 function message(text,error=false){notice.hidden=!text;notice.textContent=text;notice.classList.toggle('error',error)}function escapeHtml(value){const span=document.createElement('span');span.textContent=value;return span.innerHTML}
+// 選択済み範囲を色とaria-pressedの両方で表し、視覚以外でも状態を伝える。
 function renderHourPicker(){const start=Number($('startHour').value),end=Number($('endHour').value);$('timeRange').textContent=`${String(start).padStart(2,'0')}:00 〜 ${String(end+1).padStart(2,'0')}:00`;$('hourGrid').innerHTML=Array.from({length:24},(_,hour)=>{const selected=hour>=start&&hour<=end,edge=hour===start?' start':hour===end?' end':'';return`<button type="button" class="hour-button${selected?' selected':''}${edge}" data-hour="${hour}" aria-pressed="${selected}">${String(hour).padStart(2,'0')}:00</button>`}).join('');document.querySelectorAll('[data-hour]').forEach(button=>button.addEventListener('click',()=>selectHour(Number(button.dataset.hour))))}
 function selectHour(hour){if(selectingStart){$('startHour').value=hour;$('endHour').value=hour;selectingStart=false}else{const range=normalizeHourRange(Number($('startHour').value),hour);$('startHour').value=range.start;$('endHour').value=range.end;selectingStart=true}renderHourPicker()}
 function show(data){$('editor').hidden=false;$('title').value=data.title;$('dates').value=data.candidate_dates.join('\n');$('startHour').value=data.start_hour;$('endHour').value=data.end_hour;selectingStart=true;renderHourPicker();$('responseSummary').innerHTML=(data.responses||[]).map(r=>`<article><strong>${escapeHtml(r.name)}</strong> — ${Object.keys(r.availability||{}).length}件回答</article>`).join('')||'<p>まだ回答はありません。</p>'}

@@ -1,3 +1,6 @@
-import{CONFIG}from'./config.js';const headers={apikey:CONFIG.supabaseAnonKey,Authorization:`Bearer ${CONFIG.supabaseAnonKey}`,'Content-Type':'application/json'};
+import{CONFIG}from'./config.js';
+
+// Publishable keyのみをブラウザへ置き、権限判定と入力検証はSupabase RPC側で行う。
+const headers={apikey:CONFIG.supabaseAnonKey,Authorization:`Bearer ${CONFIG.supabaseAnonKey}`,'Content-Type':'application/json'};
 async function rpc(name,body){const response=await fetch(`${CONFIG.supabaseUrl}/rest/v1/rpc/${name}`,{method:'POST',headers,body:JSON.stringify(body)});if(!response.ok)throw new Error((await response.text())||`HTTP ${response.status}`);const text=await response.text();return text?JSON.parse(text):null}
 export const getSchedule=slug=>rpc('get_public_schedule',{p_slug:slug});export const saveResponse=(slug,name,availability)=>rpc('save_schedule_response',{p_slug:slug,p_name:name,p_availability:availability});export const adminUpdate=(slug,password,settings)=>rpc('admin_update_schedule',{p_slug:slug,p_password:password,p_title:settings.title,p_candidate_dates:settings.candidateDates,p_start_hour:settings.startHour,p_end_hour:settings.endHour});
