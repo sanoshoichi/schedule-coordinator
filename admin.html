@@ -85,9 +85,7 @@
 
     const defaultState = {
       candidateDates: [],
-      participantEntries: [
-        { name: '', slots: [] }
-      ],
+      participantEntries: [],
       participantDraft: {}
     };
 
@@ -163,6 +161,7 @@
         appState.schedules = appState.schedules.map((sched) => {
           const state = sched.payload || { candidateDates: [], participantEntries: [], participantDraft: {} };
 
+          // 名前のない旧エントリーは参加者として表示せず、保存済みデータからも除外する。
           state.participantEntries = (state.participantEntries || []).map((person) => {
             const rawSlots = person.slots || [];
             const normalized = rawSlots.map((s) => {
@@ -171,8 +170,8 @@
               if (typeof s === 'object' && s.id) return s;
               return null;
             }).filter(Boolean);
-            return { ...person, slots: normalized };
-          });
+            return { ...person, name: String(person.name || '').trim(), slots: normalized };
+          }).filter((person) => person.name);
 
           const drafts = state.participantDraft || {};
           Object.keys(drafts).forEach((name) => {
