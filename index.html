@@ -457,6 +457,11 @@
       timeLabelCell.className = 'time-col';
       headerRow.appendChild(timeLabelCell);
 
+      const summaryLabelCell = document.createElement('th');
+      summaryLabelCell.textContent = '集計';
+      summaryLabelCell.className = 'summary-col';
+      headerRow.appendChild(summaryLabelCell);
+
       users.forEach((userName) => {
         const userCell = document.createElement('th');
         userCell.className = 'day-header';
@@ -512,6 +517,38 @@
       return (entry.slots || []).slice();
     }
 
+    function getRegisteredMark(person, slotId) {
+      const response = (person.slots || []).find((slot) => (
+        typeof slot === 'string' ? slot === slotId : slot && slot.id === slotId
+      ));
+
+      if (!response) return null;
+      return typeof response === 'string' ? 'circle' : (response.mark || 'circle');
+    }
+
+    function createMarkSummaryCell(state, slotId) {
+      const counts = { circle: 0, triangle: 0, cross: 0 };
+
+      // 集計には登録済みの回答だけを使い、編集中の下書きは確定後に反映する。
+      state.participantEntries.forEach((person) => {
+        const mark = getRegisteredMark(person, slotId);
+        if (mark && Object.hasOwn(counts, mark)) counts[mark] += 1;
+      });
+
+      const cell = document.createElement('td');
+      cell.className = 'mark-summary-cell';
+      cell.setAttribute('aria-label', `○${counts.circle}人、△${counts.triangle}人、×${counts.cross}人`);
+
+      Object.keys(counts).forEach((mark) => {
+        const badge = document.createElement('span');
+        badge.className = `mark-count mark-count-${mark}`;
+        badge.textContent = `${MARK_SYMBOLS[mark]}${counts[mark]}`;
+        cell.appendChild(badge);
+      });
+
+      return cell;
+    }
+
     function renderTable() {
       const state = getState();
       const slots = buildSlots(state.candidateDates);
@@ -521,7 +558,7 @@
         scheduleHead.innerHTML = '';
         const row = document.createElement('tr');
         const empty = document.createElement('td');
-        empty.colSpan = 2;
+        empty.colSpan = 3;
         empty.className = 'empty-state';
         empty.textContent = '候補日を追加すると、ここに予定表が表示されます';
         row.appendChild(empty);
@@ -565,6 +602,8 @@
           timeCell.textContent = slot.id.slice(11, 16);
           timeCell.title = slot.label;
           row.appendChild(timeCell);
+
+          row.appendChild(createMarkSummaryCell(state, slot.id));
 
           users.forEach((userName) => {
             const cell = document.createElement('td');

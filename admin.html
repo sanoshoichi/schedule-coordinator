@@ -83,6 +83,12 @@
     const HOUR_END = 20;
       let SERVER_HAS_SCHEDULES = false;
 
+    const MARK_SYMBOLS = {
+      circle: '○',
+      triangle: '△',
+      cross: '×'
+    };
+
     const defaultState = {
       candidateDates: [],
       participantEntries: [],
@@ -578,6 +584,11 @@
       timeLabelCell.className = 'time-col';
       headerRow.appendChild(timeLabelCell);
 
+      const summaryLabelCell = document.createElement('th');
+      summaryLabelCell.textContent = '集計';
+      summaryLabelCell.className = 'summary-col';
+      headerRow.appendChild(summaryLabelCell);
+
       state.participantEntries.forEach((person) => {
         const userCell = document.createElement('th');
         userCell.className = 'day-header';
@@ -605,10 +616,42 @@
       scheduleHead.appendChild(headerRow);
     }
 
+    function getRegisteredMark(person, slotId) {
+      const response = (person.slots || []).find((slot) => (
+        typeof slot === 'string' ? slot === slotId : slot && slot.id === slotId
+      ));
+
+      if (!response) return null;
+      return typeof response === 'string' ? 'circle' : (response.mark || 'circle');
+    }
+
+    function createMarkSummaryCell(state, slotId) {
+      const counts = { circle: 0, triangle: 0, cross: 0 };
+
+      // 参加可否の傾向を時刻ごとに比較できるよう、三種類を常に同じ順序で表示する。
+      state.participantEntries.forEach((person) => {
+        const mark = getRegisteredMark(person, slotId);
+        if (mark && Object.hasOwn(counts, mark)) counts[mark] += 1;
+      });
+
+      const cell = document.createElement('td');
+      cell.className = 'mark-summary-cell';
+      cell.setAttribute('aria-label', `○${counts.circle}人、△${counts.triangle}人、×${counts.cross}人`);
+
+      Object.keys(counts).forEach((mark) => {
+        const badge = document.createElement('span');
+        badge.className = `mark-count mark-count-${mark}`;
+        badge.textContent = `${MARK_SYMBOLS[mark]}${counts[mark]}`;
+        cell.appendChild(badge);
+      });
+
+      return cell;
+    }
+
     function renderTable() {
       if (!hasActiveSchedule()) {
         scheduleHead.innerHTML = '';
-        scheduleBody.innerHTML = '<tr><td class="empty-state" colspan="2">-</td></tr>';
+        scheduleBody.innerHTML = '<tr><td class="empty-state" colspan="3">-</td></tr>';
         return;
       }
 
@@ -620,7 +663,7 @@
         scheduleHead.innerHTML = '';
         const row = document.createElement('tr');
         const empty = document.createElement('td');
-        empty.colSpan = 2;
+        empty.colSpan = 3;
         empty.className = 'empty-state';
         empty.textContent = '候補日を追加すると、ここに予定表が表示されます';
         row.appendChild(empty);
@@ -663,6 +706,8 @@
           timeCell.title = slot.label;
           row.appendChild(timeCell);
 
+          row.appendChild(createMarkSummaryCell(state, slot.id));
+
           state.participantEntries.forEach((person) => {
             const cell = document.createElement('td');
             // person.slots may be array of strings (old) or objects {id, mark}
@@ -673,8 +718,7 @@
             cell.className = (selected ? 'slot selected' : 'slot') + markClass;
             // if object exists and has mark, display corresponding symbol
             if (found && typeof found === 'object' && found.mark) {
-              const map = { circle: '○', triangle: '△', cross: '×' };
-              cell.textContent = map[found.mark] || '';
+              cell.textContent = MARK_SYMBOLS[found.mark] || '';
             } else {
               cell.textContent = selected ? '○' : '';
             }

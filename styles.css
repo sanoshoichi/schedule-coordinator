@@ -351,20 +351,6 @@ h2 {
   vertical-align: middle;
 }
 
-/* Marked slot colors (pale) */
-.slot.mark-circle {
-  background: rgba(144, 238, 144, 0.14); /* pale lightgreen */
-  color: rgba(20,20,20,0.95);
-}
-.slot.mark-triangle {
-  background: rgba(255, 236, 179, 0.12); /* pale light yellow */
-  color: rgba(20,20,20,0.95);
-}
-.slot.mark-cross {
-  background: rgba(255, 182, 193, 0.10); /* pale light red/pink */
-  color: rgba(20,20,20,0.95);
-}
-
 .slot.selected {
   font-weight: 700;
 }
@@ -416,6 +402,45 @@ h2 {
   max-width: 38px;
   padding: 6px 2px;
   text-align: center;
+}
+
+.summary-col,
+.schedule-table tbody td.mark-summary-cell {
+  min-width: 112px;
+  width: 112px;
+  padding: 6px;
+  text-align: center;
+}
+
+.schedule-table tbody td.mark-summary-cell {
+  cursor: default;
+  white-space: nowrap;
+}
+
+.mark-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  margin: 1px;
+  padding: 3px 5px;
+  border-radius: 999px;
+  font-weight: 800;
+}
+
+.mark-count-circle {
+  background: rgba(50, 190, 112, 0.18);
+  color: #65e59e;
+}
+
+.mark-count-triangle {
+  background: rgba(245, 183, 49, 0.18);
+  color: #ffd166;
+}
+
+.mark-count-cross {
+  background: rgba(241, 83, 102, 0.18);
+  color: #ff8290;
 }
 
 @media (max-width: 568px) {
@@ -530,6 +555,18 @@ h2 {
     padding: 8px 4px;
   }
 
+  .summary-col,
+  .panel .schedule-table tbody td.mark-summary-cell {
+    min-width: 104px;
+    width: 104px;
+    padding: 4px 2px;
+  }
+
+  .mark-count {
+    min-width: 28px;
+    padding: 3px 4px;
+  }
+
   .day-header {
     min-width: 80px;
   }
@@ -618,6 +655,22 @@ h2 {
   background: linear-gradient(180deg, rgba(212, 165, 87, 0.88), rgba(184, 132, 46, 0.9));
   color: #1a140e;
   font-weight: 800;
+}
+
+/* 記号の意味を文字だけに依存せず、背景色でも素早く判別できるようにする。 */
+.schedule-table .slot.selected.mark-circle {
+  background: linear-gradient(180deg, rgba(43, 180, 105, 0.92), rgba(28, 133, 77, 0.94));
+  color: #f0fff6;
+}
+
+.schedule-table .slot.selected.mark-triangle {
+  background: linear-gradient(180deg, rgba(245, 190, 63, 0.94), rgba(202, 139, 22, 0.95));
+  color: #271b05;
+}
+
+.schedule-table .slot.selected.mark-cross {
+  background: linear-gradient(180deg, rgba(235, 86, 104, 0.94), rgba(178, 48, 67, 0.96));
+  color: #fff3f5;
 }
 
 .schedule-table .slot:focus-visible {
